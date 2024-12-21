@@ -1,4 +1,5 @@
 #include <iostream>
+#include <locale>
 using namespace std;
 
 class Shape {
@@ -45,7 +46,85 @@ public:
 	}
 };
 
+class Animal {
+public:
+	virtual void MakeSound() const {}
+	virtual void PrintInfo() const {}
+};
+class Dog : public Animal {
+public:
+	virtual void MakeSound() const {
+		cout << "Гав!" << endl;
+	}
+	virtual void PrintInfo() const {
+		cout << "Це собака." << endl;
+	}
+};
+class Cat : public Animal {
+public:
+	virtual void MakeSound() const {
+		cout << "Мяу!" << endl;
+	}
+	virtual void PrintInfo() const {
+		cout << "Це кiт." << endl;
+	}
+};
+class Bird : public Animal {
+public:
+	virtual void MakeSound() const {
+		cout << "Цвiрiнь!" << endl;
+	}
+	virtual void PrintInfo() const {
+		cout << "Це птах." << endl;
+	}
+};
 
+class Account {
+protected:
+	double balance;
+public:
+	Account(const double B) : balance(B) {}
+	virtual void CalculateInterest() {}
+	virtual void Deposit(double amount) {
+		balance += amount;
+	}
+	double GetBalance() const {
+		return balance;
+	}
+};
+class SavingsAccount : public Account {
+public:
+	SavingsAccount(const double B) : Account(B) {}
+	virtual void CalculateInterest() override {
+		balance += balance * 0.05;
+	}
+};
+class CheckingAccount : public Account {
+public:
+	CheckingAccount(const double B) : Account(B) {}
+	virtual void CalculateInterest() override {
+		balance -= balance * 0.02;
+	}
+};
+class FixedDepositAccount : public Account {
+private:
+	bool lock;
+public:
+	FixedDepositAccount(const double B) : Account(B), lock(true) {}
+	virtual void CalculateInterest() override {
+		balance += balance * 0.10;
+		lock = false;
+	}
+	virtual void Deposit(double amount) override {
+		if (!lock) {
+			throw runtime_error("Limit");
+		}
+		balance += amount;
+	}
+	void SwitchLock() {
+		lock = false;
+	}
+};
 
 int main()
 {
@@ -60,38 +139,30 @@ int main()
 		delete shape;
 	}
 
+	setlocale(LC_ALL, "Ukrainian");
+	Animal* animals[] = {
+		new Dog(),
+		new Cat(),
+		new Bird(),
+	};
+	for (Animal* animal : animals) {
+		animal->MakeSound();
+		animal->PrintInfo();
+		cout << endl;
+		delete animal;
+	}
 
-
-
-	//Завдання 2: Тварини у зоопарку
-	//Реалізуйте систему для опису тварин у зоопарку.
-	//Базовий клас Animal:
-	//Містить віртуальний метод MakeSound() для відтворення звуку.
-	//Містить віртуальний метод PrintInfo() для виведення інформації про тварину.
-	
-	//Класи-нащадки:
-	//Dog: реалізує методи MakeSound() (виводить "Гав!") та PrintInfo() (виводить "Це собака.").
-	//Cat: реалізує методи MakeSound() (виводить "Мяу!") та PrintInfo() (виводить "Це кіт.").
-	//Bird: реалізує методи MakeSound() (виводить "Цвірінь!") та PrintInfo() (виводить "Це птах.").
-	
-	//У main створіть список з декількох тварин різних типів (через вказівники на Animal). Зробіть кожну
-	//з них такою, щоб вона "озвалася" (MakeSound()) і вивела інформацію про себе (PrintInfo()).
-
-
-	//Завдання 3: Рахунок у банку
-	//Створіть систему для обліку різних типів банківських рахунків.
-	//Базовий клас Account:
-	//Має поле balance для зберігання залишку на рахунку.
-	//Містить віртуальний метод CalculateInterest() для обчислення процентів.
-	//Містить метод Deposit(double amount) для поповнення рахунку.
-	
-	//Класи-нащадки:
-	//SavingsAccount: додає фіксований процент (наприклад, 5%) до балансу в методі CalculateInterest().
-	//CheckingAccount: не додає процентів, але стягує комісію за обслуговування (наприклад, 2% від
-	//балансу).
-	//FixedDepositAccount: додає вищий процент (наприклад, 10%), але не дозволяє знімати гроші до
-	//певного часу (можна вивести лише помилку при спробі зняти гроші).
-	
-	//У main створіть масив з декількох рахунків різних типів. Проведіть поповнення (Deposit()),
-	//обчисліть проценти (CalculateInterest()), та виведіть стан кожного рахунку.
+	const double balance = 500.0;
+	Account* accounts[] = {
+		new SavingsAccount(balance),
+		new CheckingAccount(balance),
+		new FixedDepositAccount(balance)
+	};
+	for (Account* account : accounts)
+	{
+		account->Deposit(500.0);
+		account->CalculateInterest();
+		cout << "Balance : " << account->GetBalance() << endl;
+		delete account;
+	}
 }
